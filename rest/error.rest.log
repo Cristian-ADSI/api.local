@@ -1,0 +1,10 @@
+[25-Jan-2025 16:58:24 Europe/Berlin] PHP Warning:  Undefined array key 3 in C:\xampp\htdocs\api.local\rest\controllers\router.controller.php on line 32
+[25-Jan-2025 17:01:58 Europe/Berlin] ERROR::GetModel=>getData() SQLSTATE[42S02]: Base table or view not found: 1146 Table 'api.local.rest' doesn't exist
+[25-Jan-2025 17:03:07 Europe/Berlin] ERROR::GetModel=>getData() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'userID' in 'order clause'
+[25-Jan-2025 17:04:22 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'where clause'
+[25-Jan-2025 17:12:46 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'userName' in 'order clause'
+[25-Jan-2025 17:24:12 Europe/Berlin] ERROR::GetModel=>getData() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'name' in 'field list'
+[25-Jan-2025 17:24:28 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S02]: Base table or view not found: 1146 Table 'api.local.services' doesn't exist
+[25-Jan-2025 17:24:37 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'userId' in 'field list'
+[25-Jan-2025 17:25:01 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'where clause'
+[25-Jan-2025 17:25:08 Europe/Berlin] ERROR::getModel=>getDataFilter() SQLSTATE[42S22]: Column not found: 1054 Unknown column 'userName' in 'order clause'
