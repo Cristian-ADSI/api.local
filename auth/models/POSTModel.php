@@ -46,12 +46,14 @@ class POSTModel
     try {
       $query = "UPDATE `" . AUTH_TABLE . "` SET " . AUTH_HTTP_TOKEN . " = :newToken WHERE `" . AUTH_USERNAME_FIELD . "` = :user";
 
-      var_dump($query);
       $stmt = Connection::connect()->prepare($query);
 
       $stmt->bindParam(":newToken", $newToken,   PDO::PARAM_STR);
       $stmt->bindParam(":user",     $this->user, PDO::PARAM_STR);
       
+
+
+
 
       if ($stmt->execute()) {
 

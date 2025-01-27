@@ -13,6 +13,7 @@ autoLoad();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+var_dump($method);
 if ($method != 'POST') {
 
   $httpResponse = new HttpResponse();
