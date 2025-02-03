@@ -1,17 +1,14 @@
 <?php
-
 require_once "controllers/get.controller.php";
 require_once "controllers/post.controller.php";
 require_once "controllers/put.controller.php";
 
 class RouterController
-
 {
     private $routeArray;
     private $route;
     private $httpResponse;
     private $table;
-
 
     public function __construct($HTTPRESPONSE)
     {

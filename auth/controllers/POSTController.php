@@ -1,16 +1,12 @@
 <?php
-
 namespace controllers;
-
 use models\POSTModel;
 use app\HttpResponse;
 
 require_once "./models/POSTModel.php";
 
-
 class POSTController
 {
-
   private $user     = '';
   private $password = '';
   private $token    = '';
@@ -31,7 +27,6 @@ class POSTController
 
       $httpResponse = new HttpResponse();
       return $httpResponse->getStatus400('Missing Credentials');
-      
     }
   }
 }

@@ -1,6 +1,10 @@
 <?php  
+// define("DBNAME",   "api.local");
+define("DBNAME",   "bd_ventas");
 
- 
-define("DBNAME",   "api.local");
-define("USER",     "root");
 define("PASSWORD", "");
+// define("PASSWORD", "");
+define("USER",     "root");
+// define("USER",     "root");
+
+

@@ -1,11 +1,8 @@
 <?php
 require_once "models/post.model.php";
 
-
 class PostController
 {
-
-
   public static function postResponse($POSTDATA, $TABLE, $HTTPRESPONSE)
   {
     $queryData = PostModel::postData($TABLE, $POSTDATA);

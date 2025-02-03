@@ -6,7 +6,6 @@ use app\Connection;
 class PostModel
 {
 
-
   public static function postData($TABLE, $POSTDATA)
   {
     $table   = $TABLE;

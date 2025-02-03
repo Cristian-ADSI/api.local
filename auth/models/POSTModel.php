@@ -1,10 +1,7 @@
 <?php
-
 namespace models;
-
 use app\Connection;
 use app\HttpResponse;
-
 
 use PDO;
 use PDOException;
@@ -128,7 +125,6 @@ class POSTModel
       $this->validPassword = TRUE;
       return;
     } else {
-
       return FALSE;
     }
   }
