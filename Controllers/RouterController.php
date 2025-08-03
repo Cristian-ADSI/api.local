@@ -1,66 +1,72 @@
 <?php
-require_once "controllers/get.controller.php";
-require_once "controllers/post.controller.php";
-require_once "controllers/put.controller.php";
 
-class RouterController
+namespace Services\Rest\Controllers;
+
+use Services\Rest\Controllers\GetController;
+use Services\Rest\Controllers\POSTController;
+use Services\Rest\Controllers\PutController;
+use Services\Rest\Interfaces\RouterControllerInterface;
+use Services\Rest\Helpers\PostRequestHandler;
+use Services\Utils\HttpResponses;
+
+
+class RouterController implements RouterControllerInterface
 {
     private $routeArray;
     private $route;
-    private $httpResponse;
+    private HttpResponses $httpResponse;
     private $table;
 
-    public function __construct($HTTPRESPONSE)
+    public function __construct(HttpResponses $httpResponse)
     {
         $this->routeArray = explode('/', $_SERVER['REQUEST_URI']);
-        $this->routeArray = array_filter($this->routeArray);        
+        $this->routeArray = array_filter($this->routeArray);
 
-        $this->httpResponse = $HTTPRESPONSE;
+        $this->httpResponse = $httpResponse;
         $this->route = '';
         $this->table = '';
     }
 
-    public function loadRoute()
+    public function loadEndpoint(string $httpMethod, array $requestData)
     {
-
         // 
-        $this->route = $this->routeArray[2] ?? NULL;
+        // $this->route = $this->routeArray[2] ?? NULL;
 
-        if (is_null($this->route)) {
+        // if (is_null($this->route)) {
+        //     $this->httpResponse->getStatus400("Table wasn't specified through the request");
+        //     return;
+        // } else {
+        //     $this->table = explode("?", trim($this->route) ?? '')[0];
+        // }
 
-            $this->httpResponse->getStatus400("Table wasn't specified through the request");
-        } else {
+        // if (empty(trim($this->table))) {
+        //     $this->httpResponse->getStatus400("Table wasn't specified through the request");
+        //     return;
+        // } else {
+        //     switch ($method) {
+        //         case 'GET':
+        //             $this->GETRequest();
+        //             break;
+        //         case 'POST':
+        //             $this->POSTRequest();
+        //             break;
+        //         case 'PUT':
+        //             $this->PUTRequest();
+        //             break;
+        //         case 'DELETE':
+        //             break;
+        //         default:
+        //             $this->httpResponse->getStatus405();
+        //             break;
+        //     }
+        // }
 
-            $this->table = explode("?", trim($this->route) ?? '')[0];
-        }
-
-
-        if (empty(trim($this->table))) {
-            $this->httpResponse->getStatus400("Table wasn't specified through the request");
-        } else {
-            $method = $_SERVER['REQUEST_METHOD'];
-
-            switch ($method) {
-                case 'GET';
-                    $this->GETRequest($this->route[3]);
-                    break;
-                case 'POST';
-                    $this->POSTRequest();
-                    break;
-                case 'PUT';
-                    $this->PUTRequest();
-                    break;
-                case 'DELETE';
-                    break;
-            }
-        }
-
-        return;
+        echo "Hello World";
+        return[];
     }
 
     private function GETRequest()
     {
-
         $arguments = [
             'table'         => $this->table,
             'startAt'       => $_GET['startAt']   ?? NULL,
@@ -89,8 +95,12 @@ class RouterController
     {
 
         if (count($_POST) > 0) {
+            $postController = new POSTController(
+                new PostRequestHandler(),
+                new HttpResponses()
+            );
 
-            PostController::postResponse($_POST, $this->table, $this->httpResponse);
+            $postController->createPost($_POST);
         } else {
             $this->httpResponse->getStatus400("Missing POST parameters in the request");
         }
