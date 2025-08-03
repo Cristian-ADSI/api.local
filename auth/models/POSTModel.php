@@ -47,10 +47,6 @@ class POSTModel
 
       $stmt->bindParam(":newToken", $newToken,   PDO::PARAM_STR);
       $stmt->bindParam(":user",     $this->user, PDO::PARAM_STR);
-      
-
-
-
 
       if ($stmt->execute()) {
 

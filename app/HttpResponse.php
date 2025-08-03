@@ -48,6 +48,7 @@ class HttpResponse
 
     return;
   }
+  
   public function getStatus403()
   {
     $this->response['details']  = "Not enough permissions, invalid or expired token";
