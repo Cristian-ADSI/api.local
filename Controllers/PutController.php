@@ -1,11 +1,10 @@
 <?php
-require_once "models/put.model.php";
+namespace Services\Rest\Controllers;
+use Services\Rest\Models\PutModel;
 
 
 class PutController
 {
-
-
   public static function putResponse($POST_DATA, $GET_DATA, $TABLE, $HTTPRESPONSE)
   {
     $queryData = PutModel::putData($POST_DATA, $GET_DATA, $TABLE);

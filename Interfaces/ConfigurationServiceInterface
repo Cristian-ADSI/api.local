@@ -1,0 +1,8 @@
+<?php
+
+namespace Services\Rest\Interfaces;
+
+interface ConfigurationServiceInterface
+{
+  public function get(string $key, $default = null);
+}

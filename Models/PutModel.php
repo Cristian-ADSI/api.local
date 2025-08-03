@@ -1,7 +1,6 @@
 <?php
-
+namespace Services\API\Models;
 use app\Connection;
-
 
 class PutModel
 {
