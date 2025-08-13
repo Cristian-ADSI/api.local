@@ -1,6 +1,6 @@
 <?php
-namespace Services\Rest\Controllers;
-use Services\Rest\Models\PutModel;
+namespace Services\RestService\Controllers;
+use Services\RestService\Models\PutModel;
 
 
 class PutController

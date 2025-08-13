@@ -1,7 +1,7 @@
 <?php
-namespace Services\Rest;
+namespace Services\RestService;
 
-use Services\Rest\Interfaces\RouterControllerInterface;
+use Services\RestService\Interfaces\RouterControllerInterface;
 use Services\Utils\HttpResponses;
 
 class Api
@@ -12,15 +12,11 @@ class Api
     public function __construct(?RouterControllerInterface $routerController = null)
     {
         $this->httpResponse = new HttpResponses();
-        $this->routerController = $this->createDefaultRouterController();
+        $this->routerController = $routerController ?? $this->createDefaultRouterController();
     }
 
     public function run($httpMethod, $requestData)
     {
-        if ($this->routerController === null) {
-            $this->routerController = $this->createDefaultRouterController();
-        }
-
         return $this->routerController->loadEndpoint($httpMethod, $requestData);
     }
 
@@ -32,6 +28,6 @@ class Api
      */
     private function createDefaultRouterController()
     {
-        return new \Services\Rest\Controllers\RouterController($this->httpResponse);
+        return new \Services\RestService\Controllers\RouterController($this->httpResponse);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Services\Rest\Interfaces;
+namespace Services\RestService\Interfaces;
 
 interface ConfigurationServiceInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Services\Rest\Controllers;
+namespace Services\RestService\Controllers;
 
-use Services\Rest\Interfaces\PostRequestHandlerInterface;
+use Services\RestService\Interfaces\PostRequestHandlerInterface;
 use Services\Utils\HttpResponses;
 
 
@@ -19,9 +19,9 @@ class POSTController
     $this->httpResponses = $httpResponses;
   }
 
-  public function createPost($requestData)
+  public function createPost($requestData):array
   {
-    $this->postRequestHandler->handle($requestData, $this->httpResponses);
+    return $this->postRequestHandler->handle($requestData, $this->httpResponses);
   }
 
 

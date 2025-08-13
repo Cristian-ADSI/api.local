@@ -1,131 +1,95 @@
 <?php
 
-namespace Services\Rest\Controllers;
+namespace Services\RestService\Controllers;
 
-use Services\Rest\Controllers\GetController;
-use Services\Rest\Controllers\POSTController;
-use Services\Rest\Controllers\PutController;
-use Services\Rest\Interfaces\RouterControllerInterface;
-use Services\Rest\Helpers\PostRequestHandler;
-use Services\Utils\HttpResponses;
+use Services\RestService\Interfaces\RouterControllerInterface;
+use Services\RestService\Helpers\RequestValidator;
+use Services\RestService\Helpers\RequestHandlerFactory;
 
 
 class RouterController implements RouterControllerInterface
 {
-    private $routeArray;
-    private $route;
-    private HttpResponses $httpResponse;
-    private $table;
+    private RequestValidator $validator;
+    private RequestHandlerFactory $handlerFactory;
 
-    public function __construct(HttpResponses $httpResponse)
+    public function __construct()
     {
-        $this->routeArray = explode('/', $_SERVER['REQUEST_URI']);
-        $this->routeArray = array_filter($this->routeArray);
-
-        $this->httpResponse = $httpResponse;
-        $this->route = '';
-        $this->table = '';
+        $this->validator = new RequestValidator();
+        $this->handlerFactory = new RequestHandlerFactory();
     }
 
-    public function loadEndpoint(string $httpMethod, array $requestData)
+    public function loadEndpoint(string $httpMethod, array $requestData): array
     {
-        // 
-        // $this->route = $this->routeArray[2] ?? NULL;
+        // Validar el método HTTP
+        $this->validator->validateHttpMethod($httpMethod);
+        
+        // Validar y obtener el nombre de la tabla
+        $this->validator->validateTableName($requestData);
+        
+        // Crear el handler apropiado y ejecutar la acción
+        $handler = $this->handlerFactory->createHandler($httpMethod);
 
-        // if (is_null($this->route)) {
-        //     $this->httpResponse->getStatus400("Table wasn't specified through the request");
-        //     return;
-        // } else {
-        //     $this->table = explode("?", trim($this->route) ?? '')[0];
-        // }
-
-        // if (empty(trim($this->table))) {
-        //     $this->httpResponse->getStatus400("Table wasn't specified through the request");
-        //     return;
-        // } else {
-        //     switch ($method) {
-        //         case 'GET':
-        //             $this->GETRequest();
-        //             break;
-        //         case 'POST':
-        //             $this->POSTRequest();
-        //             break;
-        //         case 'PUT':
-        //             $this->PUTRequest();
-        //             break;
-        //         case 'DELETE':
-        //             break;
-        //         default:
-        //             $this->httpResponse->getStatus405();
-        //             break;
-        //     }
-        // }
-
-        echo "Hello World";
-        return[];
+        return $this->executeHandler($handler, $httpMethod, $requestData);        
     }
 
-    private function GETRequest()
+    private function executeHandler(object $handler, string $httpMethod, array $requestData): array
     {
-        $arguments = [
-            'table'         => $this->table,
-            'startAt'       => $_GET['startAt']   ?? NULL,
-            'endAt'         => $_GET['endAt']     ?? NULL,
-            'orderBy'       => $_GET['orderBy']   ?? NULL,
-            'orderMode'     => $_GET['orderMode'] ?? 'ASC',
-            'select'        => $_GET['select']    ?? '*',
-        ];
+        $response = [];
+        
+        match ($httpMethod) {
+            'POST' => $response = $handler->createPost($requestData),
+            // 'GET' => $handler->getResponse($requestData),
+            // 'PUT' => $handler->putResponse($requestData),
+            default => throw new \InvalidArgumentException("Unsupported HTTP method: {$httpMethod}")
+        };
 
-        $filters   = isset($_GET['filterColumns']) && isset($_GET['filterValues']);
-
-        if ($filters) {
-            $arguments['filterColumns']  = $_GET['filterColumns'];
-            $arguments['filterValues']   = $_GET['filterValues'];
-
-            GetController::getResponseFilter($arguments, $this->httpResponse);
-        } else {
-
-            GetController::getResponse($arguments,   $this->httpResponse);
-        }
-
-        return;
+        return $response;
     }
 
-    private function POSTRequest()
-    {
+    // private function GETRequest()
+    // {
+    //     $arguments = [
+    //         'table'         => $this->tableName,
+    //         'startAt'       => $_GET['startAt']   ?? NULL,
+    //         'endAt'         => $_GET['endAt']     ?? NULL,
+    //         'orderBy'       => $_GET['orderBy']   ?? NULL,
+    //         'orderMode'     => $_GET['orderMode'] ?? 'ASC',
+    //         'select'        => $_GET['select']    ?? '*',
+    //     ];
 
-        if (count($_POST) > 0) {
-            $postController = new POSTController(
-                new PostRequestHandler(),
-                new HttpResponses()
-            );
+    //     $filters   = isset($_GET['filterColumns']) && isset($_GET['filterValues']);
 
-            $postController->createPost($_POST);
-        } else {
-            $this->httpResponse->getStatus400("Missing POST parameters in the request");
-        }
+    //     if ($filters) {
+    //         $arguments['filterColumns']  = $_GET['filterColumns'];
+    //         $arguments['filterValues']   = $_GET['filterValues'];
 
-        return;
-    }
+    //         GetController::getResponseFilter($arguments, $this->httpResponse);
+    //     } else {
 
-    private function PUTRequest()
-    {
-        $key    = $_GET['keyColumn']   ?? '';
-        $value  = $_GET['keyValue']    ?? '';
+    //         GetController::getResponse($arguments,   $this->httpResponse);
+    //     }
 
-        $emptyKeyValue = (empty(trim($key)) || empty(trim($value)));
+    //     return;
+    // }
 
-        $_PUT = [];
-        parse_str(file_get_contents('php://input'), $_PUT);
+    // private function PUTRequest()
+    // {
+    //     $key    = $_GET['keyColumn']   ?? '';
+    //     $value  = $_GET['keyValue']    ?? '';
 
-        if (count($_PUT) == 0) {
-            $this->httpResponse->getStatus400("Missing POST parameters in the request");
-        } elseif ($emptyKeyValue) {
-            $this->httpResponse->getStatus400("Missing key/value parameters in the request");
-        } else {
-            PutController::putResponse($_PUT, $_GET, $this->table, $this->httpResponse);
-        }
+    //     $emptyKeyValue = (empty(trim($key)) || empty(trim($value)));
 
-        return;
-    }
+    //     $_PUT = [];
+    //     parse_str(file_get_contents('php://input'), $_PUT);
+
+    //     if (count($_PUT) == 0) {
+    //         $this->httpResponse->getStatus400("Missing POST parameters in the request");
+    //     } elseif ($emptyKeyValue) {
+    //         $this->httpResponse->getStatus400("Missing key/value parameters in the request");
+    //     } else {
+    //         PutController::putResponse($_PUT, $_GET, $this->tableName, $this->httpResponse);
+    //     }
+
+    //     return;
+    // }
 }

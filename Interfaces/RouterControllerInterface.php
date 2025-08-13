@@ -1,5 +1,5 @@
 <?php
-namespace Services\Rest\Interfaces;
+namespace Services\RestService\Interfaces;
 
 interface RouterControllerInterface
 {
@@ -10,5 +10,5 @@ interface RouterControllerInterface
      * @param array $data The request data
      * @return mixed The response from the endpoint
      */
-    public function loadEndpoint( string $httpMethod, array $requestData);
+    public function loadEndpoint( string $httpMethod, array $requestData):array;
 } 

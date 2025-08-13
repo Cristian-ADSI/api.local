@@ -1,5 +1,5 @@
 <?php
-namespace Services\API\Models;
+namespace Services\RestService\Models;
 use app\Connection;
 
 class PutModel

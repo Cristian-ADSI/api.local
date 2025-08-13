@@ -1,7 +1,7 @@
 <?php
-namespace Services\Rest\Controllers;
+namespace Services\RestService\Controllers;
 
-use Services\Rest\Models\GetModel;
+use Services\RestService\Models\GetModel;
 
 /**
  * Controlador para manejar las operaciones GET de la API REST

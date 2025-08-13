@@ -1,95 +1,167 @@
 <?php
 
-namespace Services\Rest\Models;
+namespace Services\RestService\Models;
 
 use Services\Config\ConnectionInterface;
-use Services\Rest\Interfaces\ErrorHandlerInterface;
+use Services\RestService\Interfaces\ErrorHandlerInterface;
+use PDO;
+use PDOException;
+use PDOStatement;
+use Services\RestService\Interfaces\ModelValidatorInterface;
 
+/**
+ * Model for handling POST insertions into the database.
+ */
 class POSTModel
 {
+  /** @var ConnectionInterface */
   private ConnectionInterface $connection;
+
+  /** @var ErrorHandlerInterface */
   private ErrorHandlerInterface $errorHandler;
+
+  /** @var array */
   private array $requestData;
 
+  /** @var array */
+  private array $columns;
+
+  /** @var array */
+  private array $values;
+
+  /** @var string */
+  private string $table;
+
+  /** @var string */
+  private string $query;
+
+  /** @var PDO */
+  private ?PDO $database;
+
+  /** @var PDOStatement */
+  private ?PDOStatement $stmt;
+
+  /** @var ModelValidatorInterface */
+  private ModelValidatorInterface $validator;
+
+  /**
+   * POST model constructor.
+   *
+   * @param array $requestData
+   * @param ErrorHandlerInterface $errorHandler
+   * @param ConnectionInterface $connection
+   * @param ModelValidatorInterface $validator
+   */
   public function __construct(
     array $requestData,
     ErrorHandlerInterface $errorHandler,
-    ConnectionInterface $connection
+    ConnectionInterface $connection,
+    ModelValidatorInterface $validator
   ) {
     $this->requestData  = $requestData;
     $this->errorHandler = $errorHandler;
     $this->connection   = $connection;
+    $this->validator    = $validator;
+    $this->table        = $requestData['table'];
+    $this->columns      = [];
+    $this->values       = [];
+    $this->query        = '';
+    $this->database     = null;
+    $this->stmt         = null;
   }
 
-  public static function start(): string
+  /**
+   * Inserts a record into the database.
+   *
+   * @return array
+   * @throws \InvalidArgumentException
+   * @throws \RuntimeException
+   */
+  public function start(): array
   {
-    // $table   = $TABLE;
-    // $columns = [];
-    // $values  = [];
+    $this->cleanRequestData();
+    $this->prepareRequestData();
+    $this->validator->validateTable($this->table);
 
-    // foreach ($POSTDATA as $key => $value) {
-    //   array_push($columns, $key);
-    //   array_push($values,  $value);
-    // }
-
-    // try {
-    //   $query = PostModel::setQuery($table, $columns);
-    //   $stmt  = Connection::connect()->prepare($query);
-
-    //   foreach ($columns as $index => $value) {
-    //     $stmt->bindParam(":" . $value, $values[$index], PDO::PARAM_STR);
-    //   }
-
-    //   $stmt->execute();
-    //   $lastInsertedId = Connection::connect()->lastInsertId();
-
-    //   if ($lastInsertedId == "0") {
-    //     $lastInsertedId = $values[0];
-    //   }
-
-    //   return [
-    //     'insertedId' =>  $lastInsertedId
-    //   ];
-
-    // } catch (PDOException $err) {
-    //   error_log('ERROR::PostModel=>postData() ' . $err->getMessage());
-
-    //   return ["PDOException" => $err->getMessage()];
-    // }
-
-    return "Start Post";
+    $this->prepareQuery();
+    return $this->executeQuery();
   }
 
-  private static function setQuery($TABLE, $COLUMNS)
+  private static function setQuery(string $table, array $columns): string
   {
-    $VALUES =  PostModel::setValues($COLUMNS);
-    $COLUMNS = PostModel::setColumns($COLUMNS);
-
-    $query = "INSERT INTO `$TABLE` ($COLUMNS) VALUES  ($VALUES) ";
-
-    return $query;
+    $values  = PostModel::setValues($columns);
+    $columns = PostModel::setColumns($columns);
+    return "INSERT INTO `$table` ($columns) VALUES  ($values) ";
   }
 
-  private static function setColumns($COLUMNS)
+  private static function setColumns(array $columns): string
   {
-    $columns = "";
+    return implode(', ', array_map(fn($col) => "`$col`", $columns));
+  }
 
-    foreach ($COLUMNS as $key => $value) {
-      $columns .= "`$value`, ";
+  private static function setValues(array $columns): string
+  {
+    return implode(', ', array_map(fn($col) => ":$col", $columns));
+  }
+
+  private static function parseIsMenuDay(mixed $value): string
+  {
+    return match ($value) {
+      true,  'true',  'TRUE',  '1', 1 => "1",
+      false, 'false', 'FALSE', '0', 0 => "0",
+      default => $value
+    };
+  }
+
+  private function cleanRequestData(): void
+  {
+    unset($this->requestData['table']);
+    unset($this->requestData['action']);
+    $this->requestData['is_menu_day'] = self::parseIsMenuDay($this->requestData['is_menu_day']);
+  }
+
+  private function prepareRequestData(): void
+  {
+    foreach ($this->requestData as $key => $value) {
+      $this->validator->validateColumn($this->table, $key);
+      $this->columns[] = $key;
+      $this->values[]  = $value;
     }
-
-    return substr($columns, 0, -2);
   }
 
-  private static function setValues($COLUMNS)
+  private function prepareQuery(): void
   {
-    $values =  "";
-    foreach ($COLUMNS as $key => $value) {
+    try {
+      $this->query = self::setQuery($this->table, $this->columns);
+      $this->database  = $this->connection->connect();
+      $this->stmt  = $this->database->prepare($this->query);
 
-
-      $values .= ":$value, ";
+      foreach ($this->columns as $index => $key) {
+        $this->stmt->bindParam(":" . $key, $this->values[$index], PDO::PARAM_STR);
+      }
+    } catch (\Exception $err) {
+      $this->errorHandler->logDatabaseError($err, 'postData');
+      throw new \RuntimeException("Unexpected error: " . $err->getMessage(), 0, $err);
     }
+  }
 
-    return substr($values, 0, -2);
+  private function executeQuery(): array
+  {
+    try {
+      $this->stmt->execute();
+      $lastInsertedId = $this->database->lastInsertId();
+
+      if ($lastInsertedId == "0" || $lastInsertedId == 0) {
+        $lastInsertedId = $this->requestData["id"] ?? null;
+      }
+
+      return [
+        'insertedId' =>  $lastInsertedId
+      ];
+
+    } catch (PDOException $err) {
+      $this->errorHandler->logDatabaseError($err, 'postData');
+      throw new \RuntimeException("Database error: " . $err->getMessage(), 0, $err);
+    }
   }
 }

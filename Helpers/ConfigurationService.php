@@ -1,9 +1,9 @@
 <?php
 
-namespace Services\Rest\Helpers;
+namespace Services\RestService\Helpers;
 
 use Dotenv\Dotenv;
-use Services\Rest\Interfaces\ConfigurationServiceInterface;
+use Services\RestService\Interfaces\ConfigurationServiceInterface;
 
 class ConfigurationService implements ConfigurationServiceInterface
 {

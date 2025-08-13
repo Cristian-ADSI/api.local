@@ -1,8 +1,8 @@
 <?php
 
-namespace Services\Rest\Helpers;
+namespace Services\RestService\Helpers;
 
-use Services\Rest\Interfaces\ErrorHandlerInterface;
+use Services\RestService\Interfaces\ErrorHandlerInterface;
 use Services\Utils\Logger;
 
 class ErrorHandler implements ErrorHandlerInterface

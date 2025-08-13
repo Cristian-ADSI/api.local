@@ -1,35 +1,37 @@
 <?php
 
-namespace Services\Rest\Helpers;
+namespace Services\RestService\Helpers;
 
-use Services\Rest\Interfaces\PostRequestHandlerInterface;
+use Services\RestService\Helpers\ConfigurationService;
+use Services\RestService\Helpers\ErrorHandler;
+use Services\RestService\Interfaces\PostRequestHandlerInterface;
+use Services\RestService\Models\POSTModel;
 use Services\Utils\HttpResponses;
-use Services\Rest\Helpers\ConfigurationService;
-use Services\Rest\Models\POSTModel;
 
 class PostRequestHandler implements PostRequestHandlerInterface
 {
-  public function handle(array $requestData, HttpResponses $httpResponse): void
+  public function handle(array $requestData, HttpResponses $httpResponse): array
   {
-    $this->postResponse($requestData, $httpResponse);
+    return $this->postResponse($requestData, $httpResponse);
   }
 
-  public function postResponse(array $requestData, HttpResponses $httpResponse): string
+  public function postResponse(array $requestData, HttpResponses $httpResponse): array
   {
     $configService = new ConfigurationService();
     $dbConfig = $configService->getDatabaseConfig();
 
     $errorHandler = new ErrorHandler();
     $connection = new \Services\Config\MySQLConnection($dbConfig['host'], $dbConfig['name'], $dbConfig['user'], $dbConfig['pass']);
-    $postModel = new POSTModel($requestData, $errorHandler, $connection);
+    $validator = new ModelDataValidator();
+    $postModel = new POSTModel($requestData, $errorHandler, $connection, $validator);
 
     return  $postModel->start();
   }
 
-  public function setResponse(array $responseData, HttpResponses $httpResponse): string
+  public function setResponse(array $responseData, HttpResponses $httpResponse): array
   {
     $PDOException = isset($responseData['PDOException']);
-    $response = '';
+    $response = [];
 
     if ($PDOException) {
       $response = $httpResponse->getStatus400($responseData['PDOException']);
